@@ -1,0 +1,39 @@
+import cv2
+import face_recognition as FR
+import threading
+import queue
+
+def camera_thread(cam, frame_queue):
+    while True:
+        ret, frame = cam.read()
+        if not ret:
+            break
+        frame_queue.put(frame)
+        if cv2.waitKey(1) & 0xff == ord("q"):
+            break
+
+def processing_thread(frame_queue):
+    while True:
+        frame = frame_queue.get()
+        if frame is None:
+            break
+        
+        # Her vil du legge til din ansiktsgjenkjenningskode
+        # ...
+
+        cv2.imshow("Processed Frame", frame)
+        if cv2.waitKey(1) & 0xff == ord("q"):
+            break
+
+# Opprett en kø for å holde bildene
+frame_queue = queue.Queue()
+
+# Start kamera
+cam = cv2.VideoCapture(0)
+if not cam.isOpened():
+    print("Kan ikke åpne kamera")
+    exit()
+
+# Start trådene
+threading.Thread(target=camera_thread, args=(cam, frame_queue)).start()
+threading.Thread(target=processing_thread, args=(frame_queue,)).start()
